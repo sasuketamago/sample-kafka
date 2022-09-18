@@ -24,8 +24,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.converter.JsonMessageConverter;
@@ -46,10 +44,8 @@ public class Application {
 
 	private final Logger logger = LoggerFactory.getLogger(Application.class);
 
-	private final TaskExecutor exec = new SimpleAsyncTaskExecutor();
-
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args).close();
+		SpringApplication.run(Application.class, args);
 	}
 
 	/*
@@ -70,13 +66,11 @@ public class Application {
 		if (foo.getFoo().startsWith("fail")) {
 			throw new RuntimeException("failed");
 		}
-		this.exec.execute(() -> System.out.println("Hit Enter to terminate..."));
 	}
 
 	@KafkaListener(id = "dltGroup", topics = "topic1.DLT")
 	public void dltListen(String in) {
 		logger.info("Received from DLT: " + in);
-		this.exec.execute(() -> System.out.println("Hit Enter to terminate..."));
 	}
 
 	@Bean
@@ -93,7 +87,6 @@ public class Application {
 	@Profile("default") // Don't run from test(s)
 	public ApplicationRunner runner() {
 		return args -> {
-			System.out.println("Hit Enter to terminate...");
 			System.in.read();
 		};
 	}
